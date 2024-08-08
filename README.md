@@ -22,5 +22,5 @@ Using javascript/CSS/HTML. we have developed a many programs & games. Here is a 
 
 ## Authors
 
-- [@delickate](https://www.github.com/delickate)
+- [@Sani](https://www.linkedin.com/in/delickate)
 
