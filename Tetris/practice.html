@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris | Delickate | Sani</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="/images/Icon.png">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="300" height="600"></canvas>
+        <button id="startBtn">Start Game</button>
+        <div id="score">Score: 0</div>
+    </div>
+    <script type="text/javascript">
+    console.log("SANI: init ...");
+    const ROWS          = 20; //SANI: continer rows
+	const COLS          = 10; //SANI: container columns
+	const BLOCK_SIZE    = 30; //SANI: falling block size
+	const COLORS        = ['#FF5733', '#33FF57', '#3357FF', '#F0F33F', '#F33FF0', '#33F0F3', '#F0A033'];
+
+	const canvas = document.getElementById('gameCanvas');
+    const ctx    = canvas.getContext('2d'); //SANI: canvas object
+
+    board       = Array.from({ length: ROWS }, () => Array(COLS).fill(0)); //console.log(board); //create board array
+    score       = 0;
+    isGameOver  = false;
+
+    //SANI: create an array for shape of peice
+    const PIECES = [
+                    [[1, 1, 1, 1]], // I
+                    [[1, 1], [1, 1]], // O
+                    [[0, 1, 1], [1, 1, 0]], // S
+                    [[1, 1, 0], [0, 1, 1]], // Z
+                    [[1, 1, 1], [0, 1, 0]], // T
+                    [[1, 1, 1], [1, 0, 0]], // L
+                    [[1, 1, 1], [0, 0, 1]] // J
+              ];
+
+    //SANI: draw a board
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let row = 0; row < ROWS; row++) 
+    {
+        for (let col = 0; col < COLS; col++) 
+        {
+            if (board[row][col]) 
+            {
+                ctx.fillStyle = COLORS[board[row][col] - 1];
+                ctx.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                ctx.strokeRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            }
+        }
+    }
+
+
+    //SANI: get a piece from piece array
+    random_index = Math.random() * PIECES.length; //console.log(random_index); //SANI: get any random index of array
+    round_down  = Math.floor(random_index);  //console.log(round_down); //SANI: round index to lowest value
+    piece = PIECES[round_down];  //console.log(piece); //SANI: get the piece dimension of that index
+
+
+    //SANI: draw a piece
+    offsetX     = Math.floor(COLS / 2) - Math.floor(piece[0].length / 2);
+    offsetY     = 0;
+
+
+    if (collide(piece, offsetX, offsetY)) 
+    {
+        isGameOver = true;
+        clearInterval(gameInterval);
+        alert('Game Over');
+        exit;
+    }
+
+    piece.forEach((row, y) => 
+    {
+        row.forEach((value, x) => 
+        {
+            if (value) 
+            {
+                ctx.fillStyle = COLORS[value - 1];
+                ctx.fillRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                ctx.strokeRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            }
+        });
+    });
+
+
+    setInterval(keepDroping, 500);
+
+    function keepDroping()
+    {
+    	console.log('falling ..');
+
+    	if (!collide(piece, offsetX, offsetY + 1)) 
+	    {
+	        offsetY++;
+	    } else {
+	                //SANI: place the price
+	    			piece.forEach((row, y) => 
+				    {
+				        row.forEach((value, x) => 
+				        {
+				            if (value) 
+				            {
+				                board[y + offsetX][x + offsetY] = value;
+				            }
+				        });
+				    });
+
+	    			//check boundary
+	    			for (let row = ROWS - 1; row >= 0; row--) 
+				    {
+				        if (board[row].every(cell => cell !== 0)) 
+				        {
+				            board.splice(row, 1);
+				            board.unshift(Array(COLS).fill(0));
+				            row++;
+				        }
+				    }
+
+	                random_index = Math.random() * PIECES.length; //console.log(random_index); //SANI: get any random index of array
+				    round_down   = Math.floor(random_index);  //console.log(round_down); //SANI: round index to lowest value
+				    piece        = PIECES[round_down];  //console.log(piece); //SANI: get the piece dimension of that index
+
+				    currentPiece = piece;
+				    currentX     = Math.floor(COLS / 2) - Math.floor(currentPiece[0].length / 2);
+				    currentY     = 0;
+
+				    if (collide(currentPiece, currentX, currentY)) 
+				    {
+				        isGameOver = true;
+				        clearInterval(gameInterval);
+				        alert('Game Over');
+				        return;
+				    }
+	           }
+
+	       
+
+	    //SANI: draw a board
+	    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	    for (let row = 0; row < ROWS; row++) 
+	    {
+	        for (let col = 0; col < COLS; col++) 
+	        {
+	            if (board[row][col]) 
+	            {
+	                ctx.fillStyle = COLORS[board[row][col] - 1];
+	                ctx.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+	                ctx.strokeRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+	            }
+	        }
+	    }
+
+	    //SANI: draw a price
+	    piece.forEach((row, y) => 
+	    {
+	        row.forEach((value, x) => 
+	        {
+	            if (value) 
+	            {
+	                ctx.fillStyle = COLORS[value - 1];
+	                ctx.fillRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+	                ctx.strokeRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+	            }
+	        });
+	    });    
+	    
+    }
+
+
+    //get keyboard events
+    document.addEventListener('keydown', (event) => 
+	{
+	    
+	    if (event.code === 'ArrowLeft') 
+	    {
+	    	dir = 'left';
+
+	     	const newX = dir === 'left' ? offsetX - 1 : offsetX + 1;
+	    
+	        if (!collide(piece, newX, offsetY))  //SANI: do not let go piece outside of boundary
+    		{
+			        offsetX = newX;
+			        
+			        //SANI: draw a board
+				    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				    for (let row = 0; row < ROWS; row++) 
+				    {
+				        for (let col = 0; col < COLS; col++) 
+				        {
+				            if (board[row][col]) 
+				            {
+				                ctx.fillStyle = COLORS[board[row][col] - 1];
+				                ctx.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				                ctx.strokeRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				            }
+				        }
+				    }
+
+				    //SANI: draw a price
+				    piece.forEach((row, y) => 
+				    {
+				        row.forEach((value, x) => 
+				        {
+				            if (value) 
+				            {
+				                ctx.fillStyle = COLORS[value - 1];
+				                ctx.fillRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				                ctx.strokeRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				            }
+				        });
+				    });
+	          }
+
+	    } else if (event.code === 'ArrowRight') 
+	    {
+	     
+	       dir = 'right';
+	    	
+	     	const newX = dir === 'right' ? offsetX + 1 : offsetX - 1;
+	    
+	    	if (!collide(piece, newX, offsetY))  //SANI: do not let go piece outside of boundary
+    		{
+					offsetX = newX;
+			        
+			        //SANI: draw a board
+				    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				    for (let row = 0; row < ROWS; row++) 
+				    {
+				        for (let col = 0; col < COLS; col++) 
+				        {
+				            if (board[row][col]) 
+				            {
+				                ctx.fillStyle = COLORS[board[row][col] - 1];
+				                ctx.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				                ctx.strokeRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				            }
+				        }
+				    }
+
+				    //SANI: draw a price
+				    piece.forEach((row, y) => 
+				    {
+				        row.forEach((value, x) => 
+				        {
+				            if (value) 
+				            {
+				                ctx.fillStyle = COLORS[value - 1];
+				                ctx.fillRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				                ctx.strokeRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				            }
+				        });
+				    });
+
+			}	    
+
+	    } else if (event.code === 'ArrowDown') 
+	    {
+	        if (!collide(piece, offsetX, offsetY + 1)) 
+		    {
+		        currentY++;
+		    } else {
+		                //SANI: stick to bottom
+		    			piece.forEach((row, y) => 
+					    {
+					        row.forEach((value, x) => 
+					        {
+					            if (value) 
+					            {
+					                board[y + offsetY][x + offsetX] = value;
+					            }
+					        });
+					    });
+
+
+					    //SANI: check boundary
+					    for (let row = ROWS - 1; row >= 0; row--) 
+					    {
+					        if (board[row].every(cell => cell !== 0)) 
+					        {
+					            board.splice(row, 1);
+					            board.unshift(Array(COLS).fill(0));
+					            
+					            row++;
+					        }
+					    }
+
+		                //SANI: leave peice here
+		                random_index = Math.random() * PIECES.length; //console.log(random_index); //SANI: get any random index of array
+					    round_down   = Math.floor(random_index);  //console.log(round_down); //SANI: round index to lowest value
+					    piece        = PIECES[round_down];  //console.log(piece); //SANI: get the piece dimension of that index
+
+					    currentPiece = piece;
+					    currentX     = Math.floor(COLS / 2) - Math.floor(currentPiece[0].length / 2);
+					    currentY     = 0;
+
+					    if (collide(currentPiece, currentX, currentY)) 
+					    {
+					        isGameOver = true;
+					        clearInterval(gameInterval);
+					        exit;
+					    }
+
+
+					    //SANI: draw a board
+				    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				    for (let row = 0; row < ROWS; row++) 
+				    {
+				        for (let col = 0; col < COLS; col++) 
+				        {
+				            if (board[row][col]) 
+				            {
+				                ctx.fillStyle = COLORS[board[row][col] - 1];
+				                ctx.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				                ctx.strokeRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				            }
+				        }
+				    }
+
+				    //SANI: draw a price
+				    piece.forEach((row, y) => 
+				    {
+				        row.forEach((value, x) => 
+				        {
+				            if (value) 
+				            {
+				                ctx.fillStyle = COLORS[value - 1];
+				                ctx.fillRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				                ctx.strokeRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+				            }
+				        });
+				    });
+		           }
+
+	    } else if (event.code === 'ArrowUp') 
+	    {
+	    	//SANI: if up arrow key pressed
+
+	        piece = piece[0].map((_, i) => piece.map(row => row[i])).reverse();
+
+	        
+
+	        //SANI: draw a board
+		    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		    for (let row = 0; row < ROWS; row++) 
+		    {
+		        for (let col = 0; col < COLS; col++) 
+		        {
+		            if (board[row][col]) 
+		            {
+		                ctx.fillStyle = COLORS[board[row][col] - 1];
+		                ctx.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+		                ctx.strokeRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+		            }
+		        }
+		    }
+
+		    //SANI: draw a price
+		    piece.forEach((row, y) => 
+		    {
+		        row.forEach((value, x) => 
+		        {
+		            if (value) 
+		            {
+		                ctx.fillStyle = COLORS[value - 1];
+		                ctx.fillRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+		                ctx.strokeRect((offsetX + x) * BLOCK_SIZE, (offsetY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+		            }
+		        });
+		    });    
+		}
+	});
+
+
+   //SANI: check boundaries
+    for (let row = ROWS - 1; row >= 0; row--) 
+    {
+        if (board[row].every(cell => cell !== 0)) 
+        {
+            board.splice(row, 1);
+            board.unshift(Array(COLS).fill(0));
+            
+            row++;
+        }
+    }
+
+   //SANI: check of peice iis colide
+
+	function collide(piece, offsetX, offsetY) //SANI: detect collision
+	{
+	    return piece.some((row, y) => 
+	    {
+	        return row.some((value, x) => 
+	        {
+	            if (value) 
+	            {
+	                const newX = offsetX + x;
+	                const newY = offsetY + y;
+
+	                if (newX < 0 || newX >= COLS || newY >= ROWS) 
+	                {
+	                    return true;
+	                }
+
+	                if (board[newY] && board[newY][newX]) 
+	                {
+	                    return true;
+	                }
+	            }
+	            return false;
+	        });
+	    });
+	}
+
+    </script>
+</body>
+</html>
