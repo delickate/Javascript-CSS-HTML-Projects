@@ -18,6 +18,10 @@ Using javascript/CSS/HTML. we have developed a many programs & games. Here is a 
 ## Projects detail
 
 - Tic Tac Toe
+![image info](./Tetris/images/tic-tac-toe.jpg)
+
+- Tetris
+![image info](./Tetris/images/tetris_html.jpg)
 
 
 ## Authors
